@@ -8,7 +8,23 @@ import { Card, CardContent } from './components/ui/card';
 
 import { openOAuthPopup, fetchMe, refreshSession, logout } from './auth';
 import PlanMindMap from './components/ui/PlanMindMap';
+import CategoryView from './pages/CategoryView';
 
+// Mapping между категории от App.tsx и cap параметри
+const CATEGORY_TO_CAP_MAPPING: Record<string, string> = {
+  'assistants-productivity': 'cap:text-explain',
+  'text-writing': 'cap:text-edit', 
+  'images-design': 'cap:image-generate',
+  'video-3d': 'cap:video-generate',
+  'audio-music': 'cap:voice-generate',
+  'business-marketing': 'cap:research-web',
+  'coding-development': 'cap:automate-workflow', // или създай нов cap за coding
+  'automation-agents': 'cap:automate-workflow',
+  'data-analysis': 'cap:slide-generate',
+  'education-learning': 'cap:doc-read-pdf', // или създай нов cap
+  'health-wellness': 'cap:integrations', // или създай нов cap  
+  'specialized-niche': 'cap:integrations'
+};
 /* ---------- API base ---------- */
 const API_BASE =
   (import.meta as any).env?.VITE_API_BASE ||
@@ -467,11 +483,29 @@ function getCookie(name: string) {
 }
 
 /* ---------- Simple hash router ---------- */
-type View = 'home' | 'favorites' | 'categories';
+type View = 'home' | 'favorites' | 'categories'| 'category';
 function getViewFromHash(): View {
   if (window.location.hash === '#/favorites') return 'favorites';
+  console.log('Returning favorites'); // DEBUG
   if (window.location.hash === '#/categories') return 'categories';
+  console.log('Returning categories'); // DEBUG
+  if (window.location.hash.startsWith('#/category/')) return 'category';
+  console.log('Hash starts with #/categories/, returning category'); // DEBUG
+  console.log('Returning home (default)'); // DEBUG
   return 'home';
+}
+function CategoryViewWrapper() {
+  const hash = window.location.hash;
+  console.log('CategoryViewWrapper - hash:', hash);
+  
+  let cap = '';
+  if (hash.startsWith('#/categories/')) {
+    const pathPart = hash.substring('#/categories/'.length);
+    cap = decodeURIComponent(pathPart);
+    console.log('CategoryViewWrapper - extracted cap:', cap);
+  }
+  
+  return <CategoryView cap={cap} />;
 }
 function goHome() {
   if (window.location.hash !== '' && window.location.hash !== '#/') {
@@ -489,6 +523,8 @@ function goCategories() {
 
 export default function App() {
   const [view, setView] = useState<View>(getViewFromHash());
+  console.log('App render - Current view:', view); // DEBUG
+  console.log('App render - Current hash:', window.location.hash); // DEBUG
   const [activeTab, setActiveTab] = useState('Home');
   const [language, setLanguage] = useState<Language>('en');
 
@@ -999,7 +1035,29 @@ export default function App() {
       {showProfileModal && currentUser && <ProfileModal />}
 
       {/* Main Content */}
-      {view === 'home' ? <HomeView /> : view === 'favorites' ? <FavoritesView /> : <CategoriesView />}
+      {(() => {
+         const currentHash = window.location.hash;
+         console.log('Render decision - hash:', currentHash, 'view:', view);
+  
+         // Force правилния view based на hash независимо от view state
+        if (currentHash === '#/favorites') {
+          return <FavoritesView />;
+         }
+        if (currentHash === '#/categories') {
+          return <CategoriesView />;
+         }
+        if (currentHash.startsWith('#/categories/') && currentHash !== '#/categories') {
+          console.log('Force rendering CategoryView');
+          return <CategoryViewWrapper />;
+        }
+  
+        // Fallback към view state
+       if (view === 'favorites') return <FavoritesView />;
+       if (view === 'categories') return <CategoriesView />;
+       if (view === 'category') return <CategoryViewWrapper />;
+    
+       return <HomeView />;
+     })()}
 
       {/* Bottom Navigation (Mobile) */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200/50 md:hidden z-50">
@@ -1597,10 +1655,15 @@ export default function App() {
                 key={category.id} 
                 className="group border-slate-200/50 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-white/90 backdrop-blur-sm cursor-pointer overflow-hidden"
                 onClick={() => {
+                  console.log('Clicking category:', category.id); // DEBUG
                   // For now, just simulate category click - you can extend this to show tools in category
-                  console.log(`Clicked category: ${category.id}`);
+                  const capParam = CATEGORY_TO_CAP_MAPPING[category.id] || category.id;
+                  console.log('Mapped to cap:', capParam); // DEBUG
+                  const newHash = `#/categories/${encodeURIComponent(capParam)}`;
+                  console.log('Setting hash to:', newHash); // DEBUG
+                  window.location.hash = newHash;
                 }}
-              >
+                                >
                 <CardContent className="p-6 relative">
                   {/* Background gradient */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-300`} />

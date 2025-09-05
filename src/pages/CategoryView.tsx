@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -22,8 +22,9 @@ const API_BASE =
   (window as any).__API_BASE__ ||
   "http://127.0.0.1:8000";
 
-// Мапинг от cap:* тагове към човешки имена
+// Мапинг от cap:* тагове към човешки имена + категории от App.tsx
 const CAP_DISPLAY_NAMES: Record<string, string> = {
+  // Оригиналните cap: записи
   "cap:text-explain": "Асистенти и продуктивност",
   "cap:text-edit": "Генерация на текст и писане", 
   "cap:text-summarize": "Резюмиране на текстове",
@@ -37,11 +38,29 @@ const CAP_DISPLAY_NAMES: Record<string, string> = {
   "cap:automate-workflow": "Автоматизация и агенти",
   "cap:integrations": "Интеграции",
   "cap:slide-generate": "Презентации и данни",
-  "cap:doc-read-pdf": "Анализ на документи"
+  "cap:doc-read-pdf": "Анализ на документи",
+  
+  // Добавяме категориите от App.tsx за случай че са подадени директно
+  "assistants-productivity": "Асистенти и продуктивност",
+  "text-writing": "Генерация на текст и писане",
+  "images-design": "Изображения и дизайн",
+  "video-3d": "Видео и 3D",
+  "audio-music": "Аудио и музика",
+  "business-marketing": "Бизнес, маркетинг и социални медии",
+  "coding-development": "Кодиране и разработка",
+  "automation-agents": "Автоматизация и агенти",
+  "data-analysis": "Данни и анализ",
+  "education-learning": "Образование и обучение",
+  "health-wellness": "Здраве и благополучие",
+  "specialized-niche": "Специализирани/нишови"
 };
 
-export default function CategoryView() {
-  const { cap = "" } = useParams();
+interface CategoryViewProps {
+  cap?: string;
+}
+
+export default function CategoryView({ cap = "" }: CategoryViewProps) {
+  console.log('CategoryView received cap:', cap); // DEBUG
   const [loading, setLoading] = useState(true);
   const [tools, setTools] = useState<Tool[]>([]);
   const [filter, setFilter] = useState<string | null>(null);
@@ -109,13 +128,13 @@ export default function CategoryView() {
     <main className="mx-auto max-w-7xl px-4 py-8 pb-24 md:pb-12">
       <div className="flex items-end justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
-          <Link
-            to="/categories"
+          <button
+            onClick={() => window.location.hash = '#/categories'}
             className="inline-flex items-center gap-2 text-slate-600 hover:text-blue-600 transition-colors p-2 -ml-2 rounded-xl"
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="font-medium">Назад</span>
-          </Link>
+          </button>
           <div className="w-px h-6 bg-slate-300" />
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-800">
@@ -193,12 +212,12 @@ export default function CategoryView() {
 
       {/* Tools Grid */}
       {!loading && !error && shown.length > 0 && (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {shown.map((tool) => (
-            <Card 
-              key={tool.name} 
-              className="group border-slate-200/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/90 backdrop-blur-sm"
-            >
+       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+         {shown.map((tool, index) => ( // Добави index
+           <Card 
+             key={`${tool.name}-${index}`} // Направи key уникален
+             className="group border-slate-200/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/90 backdrop-blur-sm"
+             >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   {/* Icon */}
