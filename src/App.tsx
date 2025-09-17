@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Search, Star, MessageCircle, Zap, Sparkles, History, X, ArrowLeft, Copy, Check, Grid3x3, Heart, User, Menu, Lightbulb, Wand2 } from 'lucide-react';
-
+import { useNavigate } from "react-router-dom";
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
 import { Badge } from './components/ui/badge';
@@ -485,35 +485,23 @@ function getCookie(name: string) {
 /* ---------- Simple hash router ---------- */
 type View = 'home' | 'favorites' | 'categories'| 'category';
 function getViewFromHash(): View {
-  if (window.location.hash === '#/favorites') return 'favorites';
-  console.log('Returning favorites'); // DEBUG
-  if (window.location.hash === '#/categories') return 'categories';
-  console.log('Returning categories'); // DEBUG
-  if (window.location.hash.startsWith('#/category/')) return 'category';
-  console.log('Hash starts with #/categories/, returning category'); // DEBUG
-  console.log('Returning home (default)'); // DEBUG
+  const h = window.location.hash;
+  if (h === '#/favorites') return 'favorites';
+  if (h === '#/categories') return 'categories';
+  if (h.startsWith('#/categories/')) return 'category';
   return 'home';
 }
+
 function CategoryViewWrapper() {
   const hash = window.location.hash;
-  console.log('CategoryViewWrapper - hash:', hash);
-  
   let cap = '';
   if (hash.startsWith('#/categories/')) {
     const pathPart = hash.substring('#/categories/'.length);
     cap = decodeURIComponent(pathPart);
-    console.log('CategoryViewWrapper - extracted cap:', cap);
   }
-  
   return <CategoryView cap={cap} />;
 }
-function goHome() {
-  if (window.location.hash !== '' && window.location.hash !== '#/') {
-    window.location.hash = '#/';
-  } else {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-}
+
 function goFavorites() {
   if (window.location.hash !== '#/favorites') window.location.hash = '#/favorites';
 }
@@ -523,8 +511,6 @@ function goCategories() {
 
 export default function App() {
   const [view, setView] = useState<View>(getViewFromHash());
-  console.log('App render - Current view:', view); // DEBUG
-  console.log('App render - Current hash:', window.location.hash); // DEBUG
   const [activeTab, setActiveTab] = useState('Home');
   const [language, setLanguage] = useState<Language>('en');
 
@@ -870,7 +856,7 @@ export default function App() {
 
   const favCount = favs.size;
 
-  // Stable input change handler to prevent focus loss
+  // Stable input change handler
   const handleChatInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setChatInput(e.target.value);
   }, []);
@@ -882,6 +868,20 @@ export default function App() {
     }
   }, [handleFindTools]);
 
+  // >>> NEW: истински Home reset + навигация
+  const handleGoHome = useCallback(() => {
+    if (window.location.hash !== '#/') {
+      window.location.hash = '#/';
+    }
+    setView('home');
+    setGroups([]);
+    setSearchQuery('');
+    setChatInput('');
+    setLastGoal('');
+    setShowFavsOnly(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Header */}
@@ -889,7 +889,7 @@ export default function App() {
         <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <div className="flex items-center gap-3 cursor-pointer" onClick={goHome}>
+            <div className="flex items-center gap-3 cursor-pointer" onClick={handleGoHome}>
               <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
@@ -899,7 +899,7 @@ export default function App() {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-8">
               <button 
-                onClick={goHome} 
+                onClick={handleGoHome} 
                 className={`font-medium transition-colors ${view === 'home' ? 'text-blue-600' : 'text-slate-600 hover:text-blue-600'}`}
               >
                 {t('discover')}
@@ -1010,7 +1010,7 @@ export default function App() {
           {mobileMenuOpen && (
             <div className="md:hidden mt-4 pb-4 border-t border-slate-200/50 pt-4">
               <div className="space-y-2">
-                <button onClick={() => { goHome(); setMobileMenuOpen(false); }} className="block w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors font-medium">
+                <button onClick={() => { handleGoHome(); setMobileMenuOpen(false); }} className="block w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors font-medium">
                   {t('discover')}
                 </button>
                 <button onClick={() => { goCategories(); setMobileMenuOpen(false); }} className="block w-full text-left px-3 py-2 rounded-xl hover:bg-slate-50 transition-colors font-medium">
@@ -1037,8 +1037,6 @@ export default function App() {
       {/* Main Content */}
       {(() => {
          const currentHash = window.location.hash;
-         console.log('Render decision - hash:', currentHash, 'view:', view);
-  
          // Force правилния view based на hash независимо от view state
         if (currentHash === '#/favorites') {
           return <FavoritesView />;
@@ -1047,7 +1045,6 @@ export default function App() {
           return <CategoriesView />;
          }
         if (currentHash.startsWith('#/categories/') && currentHash !== '#/categories') {
-          console.log('Force rendering CategoryView');
           return <CategoryViewWrapper />;
         }
   
@@ -1063,7 +1060,7 @@ export default function App() {
       <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200/50 md:hidden z-50">
         <div className="flex items-center justify-around py-2">
           {[
-            { name: t('home'), icon: Grid3x3, active: activeTab === 'Home', action: () => { goHome(); setActiveTab('Home'); } },
+            { name: t('home'), icon: Grid3x3, active: activeTab === 'Home', action: () => { handleGoHome(); setActiveTab('Home'); } },
             { name: t('categories'), icon: MessageCircle, active: activeTab === 'Categories', action: () => { goCategories(); setActiveTab('Categories'); } },
             { name: t('favorites'), icon: Heart, active: activeTab === 'Favorites', action: () => { goFavorites(); setActiveTab('Favorites'); } },
             { name: t('profile'), icon: User, active: activeTab === 'Profile', action: () => setActiveTab('Profile') }
@@ -1333,8 +1330,8 @@ export default function App() {
           </section>
         )}
 
-        {/* Visual Plan */}
-        {filteredGroups.length > 0 && (
+         {/* Visual Plan */}
+         {filteredGroups.length > 0 && (
           <section className="mb-16">
             <div className="flex items-center gap-3 mb-8">
               <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
@@ -1351,6 +1348,7 @@ export default function App() {
               onOpenTool={handleOpenTool}
               language={language}
               buildPrompt={buildPromptCallback}
+              
             />
           </section>
         )}
@@ -1385,7 +1383,7 @@ export default function App() {
       <main className="max-w-6xl mx-auto px-4 py-8 pb-24 md:pb-12">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <button onClick={goHome} className="inline-flex items-center gap-2 text-slate-600 hover:text-blue-600 transition-colors p-2 -ml-2 rounded-xl">
+            <button onClick={handleGoHome} className="inline-flex items-center gap-2 text-slate-600 hover:text-blue-600 transition-colors p-2 -ml-2 rounded-xl">
               <ArrowLeft className="w-4 h-4" />
               <span className="font-medium">{t('back')}</span>
             </button>
@@ -1404,7 +1402,7 @@ export default function App() {
             </div>
             <h3 className="text-slate-800 mb-3 font-bold text-xl">{t('noFavoritesTitle')}</h3>
             <p className="text-slate-600 mb-8">{t('noFavoritesSubtitle')}</p>
-            <Button onClick={goHome} className="bg-gradient-to-r from-blue-600 to-indigo-600">
+            <Button onClick={handleGoHome} className="bg-gradient-to-r from-blue-600 to-indigo-600">
               {t('discoverTools')}
             </Button>
           </div>
@@ -1616,7 +1614,7 @@ export default function App() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <button onClick={goHome} className="inline-flex items-center gap-2 text-slate-600 hover:text-blue-600 transition-colors p-2 -ml-2 rounded-xl">
+            <button onClick={handleGoHome} className="inline-flex items-center gap-2 text-slate-600 hover:text-blue-600 transition-colors p-2 -ml-2 rounded-xl">
               <ArrowLeft className="w-4 h-4" />
               <span className="font-medium">{t('back')}</span>
             </button>
@@ -1655,12 +1653,8 @@ export default function App() {
                 key={category.id} 
                 className="group border-slate-200/50 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-white/90 backdrop-blur-sm cursor-pointer overflow-hidden"
                 onClick={() => {
-                  console.log('Clicking category:', category.id); // DEBUG
-                  // For now, just simulate category click - you can extend this to show tools in category
                   const capParam = CATEGORY_TO_CAP_MAPPING[category.id] || category.id;
-                  console.log('Mapped to cap:', capParam); // DEBUG
                   const newHash = `#/categories/${encodeURIComponent(capParam)}`;
-                  console.log('Setting hash to:', newHash); // DEBUG
                   window.location.hash = newHash;
                 }}
                                 >

@@ -149,6 +149,7 @@ export default function PlanMindMap({
   return (
     <div className="space-y-6">
       {/* Goal header */}
+      {/*}
       <div className="text-center">
         <div className="inline-flex items-center gap-3 bg-white/80 border border-slate-200 rounded-2xl px-4 py-3 shadow-sm">
           <span className="text-slate-700">{headerTitle}</span>
