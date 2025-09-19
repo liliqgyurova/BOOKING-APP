@@ -9,6 +9,7 @@ import { Card, CardContent } from './components/ui/card';
 import { openOAuthPopup, fetchMe, refreshSession, logout } from './auth';
 import PlanMindMap from './components/ui/PlanMindMap';
 import CategoryView from './pages/CategoryView';
+import { ArrowRight } from 'lucide-react';
 
 // Mapping между категории от App.tsx и cap параметри
 const CATEGORY_TO_CAP_MAPPING: Record<string, string> = {
@@ -18,13 +19,14 @@ const CATEGORY_TO_CAP_MAPPING: Record<string, string> = {
   'video-3d': 'cap:video-generate',
   'audio-music': 'cap:voice-generate',
   'business-marketing': 'cap:research-web',
-  'coding-development': 'cap:automate-workflow', // или създай нов cap за coding
+  'coding-development': 'cap:automate-workflow',
   'automation-agents': 'cap:automate-workflow',
   'data-analysis': 'cap:slide-generate',
-  'education-learning': 'cap:doc-read-pdf', // или създай нов cap
-  'health-wellness': 'cap:integrations', // или създай нов cap  
+  'education-learning': 'cap:doc-read-pdf',
+  'health-wellness': 'cap:integrations',
   'specialized-niche': 'cap:integrations'
 };
+
 /* ---------- API base ---------- */
 const API_BASE =
   (import.meta as any).env?.VITE_API_BASE ||
@@ -137,6 +139,25 @@ const translations = {
     totalCategories: 'Categories',
     totalTools: 'Total Tools',
     
+    // Featured categories (home page)
+    featuredCategories: 'Popular Categories',
+    featuredCategoriesSubtitle: 'Explore the most used AI tool categories and discover what\'s possible',
+    viewAllCategories: 'View All Categories',
+    quickStart: 'Quick Start',
+    popularTools: 'Popular Tools',
+    sampleTool: 'Try Now',
+    
+    // Featured tools section
+    featuredToolsTitle: 'Most Popular AI Tools',
+    featuredToolsSubtitle: 'Start using these powerful AI tools right away - no planning needed',
+    tryTool: 'Try Tool',
+    mostUsed: 'Most Used',
+    
+    // Categories overview
+    exploreCategories: 'Explore Categories',
+    exploreCategoriesSubtitle: 'Browse our organized collection of AI tools by category',
+    browseAllCategories: 'Browse All Categories',
+    
     // Auth
     createAccount: 'Create account',
     emailPassword: 'email / password',
@@ -245,7 +266,7 @@ const translations = {
     removeFromFavorites: 'Премахни от любими',
     
     // Empty states
-    readyTitle: 'Готови да откриваете AI инструменти?',
+    readyTitle: 'Готови да откривате AI инструменти?',
     readySubtitle: 'Кажете ни какво искате да постигнете и ще намерим перфектните инструменти за вас.',
     noToolsTitle: 'Няма намерени инструменти',
     noToolsSubtitle: 'Опитайте да промените търсенето или филтрите.',
@@ -265,6 +286,25 @@ const translations = {
     toolsInCategory: 'инструмента в тази категория',
     totalCategories: 'Категории',
     totalTools: 'Общо инструменти',
+    
+    // Featured categories (home page)
+    featuredCategories: 'Популярни категории',
+    featuredCategoriesSubtitle: 'Разгледайте най-използваните AI категории и открийте какво е възможно',
+    viewAllCategories: 'Виж всички категории',
+    quickStart: 'Бърз старт',
+    popularTools: 'Популярни инструменти',
+    sampleTool: 'Пробвай сега',
+    
+    // Featured tools section
+    featuredToolsTitle: 'Най-популярни AI инструменти',
+    featuredToolsSubtitle: 'Започнете да използвате тези мощни AI инструменти веднага - без нужда от планиране',
+    tryTool: 'Пробвай инструмент',
+    mostUsed: 'Най-използван',
+    
+    // Categories overview
+    exploreCategories: 'Разгледай категории',
+    exploreCategoriesSubtitle: 'Прегледайте нашата организирана колекция от AI инструменти по категории',
+    browseAllCategories: 'Разгледай всички категории',
     
     // Auth
     createAccount: 'Създай профил',
@@ -333,6 +373,134 @@ const RECENT_MAX = 6;
 /* ---------- Language preference ---------- */
 const LANGUAGE_KEY = 'myai:language';
 
+/* ---------- Featured Tools Data ---------- */
+const getFeaturedTools = (language: Language) => [
+  {
+    name: 'ChatGPT',
+    link: 'https://chat.openai.com',
+    description: language === 'bg' ? 'Най-популярният AI чатбот за разговори и помощ' : 'Most popular AI chatbot for conversations and assistance',
+    category: language === 'bg' ? 'Текст и разговори' : 'Text & Chat',
+    gradient: 'from-green-500 to-emerald-600',
+    icon: '🤖'
+  },
+  {
+    name: 'Midjourney',
+    link: 'https://midjourney.com',
+    description: language === 'bg' ? 'Водещ AI инструмент за генериране на изображения' : 'Leading AI tool for image generation',
+    category: language === 'bg' ? 'Изображения' : 'Images',
+    gradient: 'from-purple-500 to-pink-600',
+    icon: '🎨'
+  },
+  {
+    name: 'Claude',
+    link: 'https://claude.ai',
+    description: language === 'bg' ? 'Интелигентен AI асистент от Anthropic' : 'Intelligent AI assistant by Anthropic',
+    category: language === 'bg' ? 'Текст и анализ' : 'Text & Analysis',
+    gradient: 'from-blue-500 to-indigo-600',
+    icon: '💬'
+  },
+  {
+    name: 'DALL-E',
+    link: 'https://openai.com/dall-e-2',
+    description: language === 'bg' ? 'AI генератор на изображения от OpenAI' : 'AI image generator by OpenAI',
+    category: language === 'bg' ? 'Изображения' : 'Images',
+    gradient: 'from-orange-500 to-red-600',
+    icon: '🖼️'
+  },
+  {
+    name: 'GitHub Copilot',
+    link: 'https://github.com/features/copilot',
+    description: language === 'bg' ? 'AI помощник за програмиране' : 'AI programming assistant',
+    category: language === 'bg' ? 'Кодиране' : 'Coding',
+    gradient: 'from-slate-600 to-gray-700',
+    icon: '💻'
+  },
+  {
+    name: 'Canva AI',
+    link: 'https://canva.com',
+    description: language === 'bg' ? 'AI инструменти за дизайн и креативност' : 'AI tools for design and creativity',
+    category: language === 'bg' ? 'Дизайн' : 'Design',
+    gradient: 'from-cyan-500 to-blue-600',
+    icon: '✨'
+  }
+];
+
+/* ---------- Featured Categories Data ---------- */
+const getFeaturedCategories = (language: Language) => [
+  {
+    id: 'text-writing',
+    emoji: '✍️',
+    label: language === 'bg' ? 'Генерация на текст' : 'Text Generation',
+    description: language === 'bg' ? 'Създаване и редактиране на текстово съдържание' : 'Create and edit written content',
+    gradient: 'from-emerald-500 to-teal-600',
+    tools: [
+      { name: 'ChatGPT', link: 'https://chat.openai.com', description: language === 'bg' ? 'Най-популярният AI чатбот' : 'Most popular AI chatbot' },
+      { name: 'Claude', link: 'https://claude.ai', description: language === 'bg' ? 'Помощник от Anthropic' : 'Assistant by Anthropic' },
+      { name: 'Grammarly', link: 'https://grammarly.com', description: language === 'bg' ? 'Проверка на граматика' : 'Grammar checking' }
+    ]
+  },
+  {
+    id: 'images-design',
+    emoji: '🎨',
+    label: language === 'bg' ? 'Изображения и дизайн' : 'Images & Design',
+    description: language === 'bg' ? 'Генериране и редактиране на визуално съдържание' : 'Generate and edit visual content',
+    gradient: 'from-purple-500 to-pink-600',
+    tools: [
+      { name: 'Midjourney', link: 'https://midjourney.com', description: language === 'bg' ? 'AI генерация на изображения' : 'AI image generation' },
+      { name: 'DALL-E', link: 'https://openai.com/dall-e-2', description: language === 'bg' ? 'Изкуство от OpenAI' : 'Art by OpenAI' },
+      { name: 'Canva AI', link: 'https://canva.com', description: language === 'bg' ? 'Дизайн помощник' : 'Design assistant' }
+    ]
+  },
+  {
+    id: 'assistants-productivity',
+    emoji: '🤖',
+    label: language === 'bg' ? 'Продуктивност' : 'Productivity',
+    description: language === 'bg' ? 'Инструменти за повишаване на ефективността' : 'Tools to boost your efficiency',
+    gradient: 'from-blue-500 to-indigo-600',
+    tools: [
+      { name: 'Notion AI', link: 'https://notion.so', description: language === 'bg' ? 'Умни бележки' : 'Smart notes' },
+      { name: 'Jasper', link: 'https://jasper.ai', description: language === 'bg' ? 'Маркетинг копирайтинг' : 'Marketing copywriting' },
+      { name: 'Copy.ai', link: 'https://copy.ai', description: language === 'bg' ? 'Генериране на съдържание' : 'Content generation' }
+    ]
+  },
+  {
+    id: 'video-3d',
+    emoji: '🎬',
+    label: language === 'bg' ? 'Видео и 3D' : 'Video & 3D',
+    description: language === 'bg' ? 'Създаване на видео и 3D съдържание' : 'Create video and 3D content',
+    gradient: 'from-red-500 to-orange-600',
+    tools: [
+      { name: 'RunwayML', link: 'https://runwayml.com', description: language === 'bg' ? 'AI видео редактиране' : 'AI video editing' },
+      { name: 'Synthesia', link: 'https://synthesia.io', description: language === 'bg' ? 'AI видео презентации' : 'AI video presentations' },
+      { name: 'Luma AI', link: 'https://lumalabs.ai', description: language === 'bg' ? '3D генериране' : '3D generation' }
+    ]
+  },
+  {
+    id: 'coding-development',
+    emoji: '💻',
+    label: language === 'bg' ? 'Кодиране' : 'Coding',
+    description: language === 'bg' ? 'Помощници за програмиране' : 'Programming assistants',
+    gradient: 'from-slate-600 to-gray-700',
+    tools: [
+      { name: 'GitHub Copilot', link: 'https://github.com/features/copilot', description: language === 'bg' ? 'AI програмиране' : 'AI programming' },
+      { name: 'Cursor', link: 'https://cursor.sh', description: language === 'bg' ? 'AI редактор на код' : 'AI code editor' },
+      { name: 'Replit', link: 'https://replit.com', description: language === 'bg' ? 'AI програмна среда' : 'AI coding environment' }
+    ]
+  },
+  {
+    id: 'audio-music',
+    emoji: '🎵',
+    label: language === 'bg' ? 'Аудио и музика' : 'Audio & Music',
+    description: language === 'bg' ? 'Генериране на звук и музика' : 'Generate sound and music',
+    gradient: 'from-amber-500 to-yellow-600',
+    tools: [
+      { name: 'ElevenLabs', link: 'https://elevenlabs.io', description: language === 'bg' ? 'AI гласов синтез' : 'AI voice synthesis' },
+      { name: 'Mubert', link: 'https://mubert.com', description: language === 'bg' ? 'AI музика' : 'AI music' },
+      { name: 'Suno', link: 'https://suno.ai', description: language === 'bg' ? 'Генериране на песни' : 'Song generation' }
+    ]
+  }
+];
+
 /* ---------- Helpers ---------- */
 function groupsFromPlanFallback(plan: PlanItem[]): Group[] {
   const byTitle = new Map<string, Map<string, Tool>>();
@@ -348,9 +516,7 @@ function groupsFromPlanFallback(plan: PlanItem[]): Group[] {
   }));
 }
 
-// Enhanced suggested prompt builder with language support
 // Enhanced suggested prompt builder with language support and step-specific context
-// Direct actionable prompt builder that creates copy-paste ready prompts
 function buildStepPrompt(goal: string, stepTitle: string, tools: Tool[], language: Language) {
   const isBg = language === 'bg';
   
@@ -1212,168 +1378,429 @@ export default function App() {
     );
   }
 
-  // Home View Component with BOTH PlanMindMap AND Results sections
+  // Home View Component with Sidebar Layout
   function HomeView() {
-    return (
-      <main className="max-w-6xl mx-auto px-4 py-8 pb-24 md:pb-12">
-        {/* Hero Section */}
-        <section className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl text-slate-800 mb-6 font-bold tracking-tight">
-            {t('heroTitle')} <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{t('heroTitleHighlight')}</span>
-          </h1>
-          <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-            {t('heroSubtitle')}
-          </p>
+    const featuredCategories = getFeaturedCategories(language);
+    const featuredTools = getFeaturedTools(language);
+    // Default sidebar to open on desktop, closed on mobile
+    const [sidebarOpen, setSidebarOpen] = useState(typeof window !== 'undefined' && window.innerWidth >= 1024);
 
-          {/* Main Chat Input */}
-          <div className="max-w-2xl mx-auto mb-8">
-            <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-6 border border-slate-200/50 shadow-2xl shadow-blue-500/10">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
-                  <MessageCircle className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-slate-700 text-lg font-medium">{t('inputPlaceholder')}</span>
+    // Listen for window resize to adjust sidebar state
+    useEffect(() => {
+      const handleResize = () => {
+        if (window.innerWidth >= 1024 && !sidebarOpen) {
+          setSidebarOpen(true);
+        } else if (window.innerWidth < 1024 && sidebarOpen) {
+          setSidebarOpen(false);
+        }
+      };
+
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }, [sidebarOpen]);
+
+    return (
+      <div className="flex min-h-screen">
+        {/* Sidebar - Categories */}
+        <aside className={`fixed inset-y-0 left-0 z-50 w-80 bg-white/95 backdrop-blur-xl border-r border-slate-200/50 transform transition-transform duration-300 ease-in-out ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}>
+          <div className="flex flex-col h-full">
+            {/* Sidebar Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-200/50 relative z-10">
+              <div>
+                <h2 className="text-lg font-bold text-slate-800">{t('featuredCategories')}</h2>
+                <p className="text-sm text-slate-600 mt-1">{language === 'bg' ? 'Изберете категория' : 'Choose a category'}</p>
               </div>
-              <div className="flex gap-3">
-                <Input
-                  placeholder={language === 'bg' ? 'напр., Писане на по-добри имейли, създаване на лого, анализ на данни...' : 'e.g., Write better emails, create a logo, analyze data...'}
-                  autoFocus
-                  value={chatInput}
-                  onChange={handleChatInputChange}
-                  onKeyDown={handleKeyDown}
-                  className="flex-1 bg-slate-50/80 border-slate-200 text-base h-14 rounded-2xl px-5 font-medium placeholder:text-slate-400"
-                />
-                <Button 
-                  onClick={() => handleFindTools()} 
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-6 h-14 rounded-2xl shadow-lg shadow-blue-500/25 font-medium"
-                  disabled={loading}
+              {/* Toggle button inside sidebar */}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Sidebar close button clicked'); // Debug
+                  setSidebarOpen(false);
+                }}
+                className="p-2 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer relative z-20 flex-shrink-0"
+                title={language === 'bg' ? 'Скрий панела' : 'Hide sidebar'}
+                type="button"
+                style={{ pointerEvents: 'auto' }}
+              >
+                <ArrowLeft className="w-5 h-5 text-slate-600" style={{ pointerEvents: 'none' }} />
+              </button>
+            </div>
+
+            {/* Categories List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {featuredCategories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => {
+                    // Navigate directly to category page
+                    const capParam = CATEGORY_TO_CAP_MAPPING[category.id] || category.id;
+                    const newHash = `#/categories/${encodeURIComponent(capParam)}`;
+                    window.location.hash = newHash;
+                    setSidebarOpen(false);
+                  }}
+                  className="w-full group bg-white/80 hover:bg-white border border-slate-200/50 hover:border-slate-300/50 rounded-2xl p-4 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
                 >
-                  <Zap className="w-5 h-5 mr-2" /> {t('findTools')}
+                  <div className="flex items-start gap-3">
+                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${category.gradient} flex items-center justify-center shadow-md group-hover:scale-105 transition-transform duration-200`}>
+                      <span className="text-xl">{category.emoji}</span>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h3 className="font-semibold text-slate-800 group-hover:text-slate-900 transition-colors">
+                        {category.label}
+                      </h3>
+                      <p className="text-xs text-slate-600 mt-1 line-clamp-2">
+                        {category.description}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-xs text-slate-500">
+                          {category.tools.length} {language === 'bg' ? 'инструмента' : 'tools'}
+                        </span>
+                        <div className="flex -space-x-1">
+                          {category.tools.slice(0, 3).map((tool, idx) => (
+                            <div
+                              key={tool.name}
+                              className="w-5 h-5 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center"
+                              title={tool.name}
+                            >
+                              <span className="text-xs text-slate-600">{tool.name.charAt(0)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+
+              {/* View All Categories Button - moved here */}
+              <div className="pt-2">
+                <Button 
+                  onClick={() => {
+                    goCategories();
+                    setSidebarOpen(false);
+                  }}
+                  variant="outline"
+                  className="w-full border-blue-300 text-blue-600 hover:bg-blue-50 h-12"
+                >
+                  {t('viewAllCategories')}
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
             </div>
           </div>
+        </aside>
 
-          {/* Recent Prompts */}
-          {recents.length > 0 && (
-            <div className="max-w-2xl mx-auto mb-10">
-              <div className="flex items-center justify-between mb-3 px-1">
-                <div className="flex items-center gap-2 text-slate-600">
-                  <History className="w-4 h-4" />
-                  <span className="text-sm font-medium">{t('recentPrompts')}</span>
+        {/* Sidebar Overlay (Mobile) */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Main Content */}
+        <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? 'lg:ml-80' : 'lg:ml-0'}`}>
+          <div className="max-w-4xl mx-auto px-4 py-8 pb-24 md:pb-12">
+            {/* Show sidebar toggle only when sidebar is closed */}
+            {!sidebarOpen && (
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="fixed top-20 left-4 z-30 p-3 bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200"
+                title={language === 'bg' ? 'Покажи панела' : 'Show sidebar'}
+              >
+                <ArrowRight className="w-5 h-5 text-slate-600" />
+              </button>
+            )}
+
+            {/* Hero Section */}
+            <section className="text-center mb-16">
+              <h1 className="text-4xl md:text-5xl text-slate-800 mb-6 font-bold tracking-tight">
+                {t('heroTitle')} <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{t('heroTitleHighlight')}</span>
+              </h1>
+              <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+                {t('heroSubtitle')}
+              </p>
+
+              {/* Main Chat Input */}
+              <div className="max-w-2xl mx-auto mb-8">
+                <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-6 border border-slate-200/50 shadow-2xl shadow-blue-500/10">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+                      <MessageCircle className="w-6 h-6 text-white" />
+                    </div>
+                    <span className="text-slate-700 text-lg font-medium">{t('inputPlaceholder')}</span>
+                  </div>
+                  <div className="flex gap-3">
+                    <Input
+                      placeholder={language === 'bg' ? 'напр., Писане на по-добри имейли, създаване на лого, анализ на данни...' : 'e.g., Write better emails, create a logo, analyze data...'}
+                      autoFocus
+                      value={chatInput}
+                      onChange={handleChatInputChange}
+                      onKeyDown={handleKeyDown}
+                      className="flex-1 bg-slate-50/80 border-slate-200 text-base h-14 rounded-2xl px-5 font-medium placeholder:text-slate-400"
+                    />
+                    <Button 
+                      onClick={() => handleFindTools()} 
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-6 h-14 rounded-2xl shadow-lg shadow-blue-500/25 font-medium"
+                      disabled={loading}
+                    >
+                      <Zap className="w-5 h-5 mr-2" /> {t('findTools')}
+                    </Button>
+                  </div>
                 </div>
-                <button className="text-xs text-slate-400 hover:text-slate-600 transition-colors" onClick={clearRecents}>
-                  {t('clearAll')}
-                </button>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {recents.map((prompt) => (
-                  <div key={prompt} className="group inline-flex items-center max-w-full bg-white/90 border border-slate-200/60 rounded-xl px-3 py-2 shadow-sm hover:shadow-md transition-shadow">
-                    <button 
-                      className="text-sm text-slate-700 truncate max-w-[200px] hover:text-blue-600 transition-colors" 
-                      title={prompt} 
-                      onClick={() => { setChatInput(prompt); handleFindTools(prompt); }}
-                    >
-                      {prompt}
-                    </button>
-                    <button 
-                      className="ml-2 text-slate-400 hover:text-red-500 transition-colors p-1" 
-                      onClick={() => removeRecent(prompt)} 
-                      aria-label="remove" 
-                      title="Remove"
-                    >
-                      <X className="w-3 h-3" />
+
+              {/* Recent Prompts */}
+              {recents.length > 0 && (
+                <div className="max-w-2xl mx-auto mb-10">
+                  <div className="flex items-center justify-between mb-3 px-1">
+                    <div className="flex items-center gap-2 text-slate-600">
+                      <History className="w-4 h-4" />
+                      <span className="text-sm font-medium">{t('recentPrompts')}</span>
+                    </div>
+                    <button className="text-xs text-slate-400 hover:text-slate-600 transition-colors" onClick={clearRecents}>
+                      {t('clearAll')}
                     </button>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                  <div className="flex flex-wrap gap-2">
+                    {recents.map((prompt) => (
+                      <div key={prompt} className="group inline-flex items-center max-w-full bg-white/90 border border-slate-200/60 rounded-xl px-3 py-2 shadow-sm hover:shadow-md transition-shadow">
+                        <button 
+                          className="text-sm text-slate-700 truncate max-w-[200px] hover:text-blue-600 transition-colors" 
+                          title={prompt} 
+                          onClick={() => { setChatInput(prompt); handleFindTools(prompt); }}
+                        >
+                          {prompt}
+                        </button>
+                        <button 
+                          className="ml-2 text-slate-400 hover:text-red-500 transition-colors p-1" 
+                          onClick={() => removeRecent(prompt)} 
+                          aria-label="remove" 
+                          title="Remove"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {/* Status Messages */}
-          {error && (
-            <div className="text-red-600 font-medium mb-6 p-4 bg-red-50 rounded-2xl border border-red-200 max-w-2xl mx-auto">
-              {error}
-            </div>
-          )}
-          {loading && (
-            <div className="text-blue-600 font-medium mb-6 p-4 bg-blue-50 rounded-2xl border border-blue-200 max-w-2xl mx-auto">
-              {t('loading')}
-            </div>
-          )}
-        </section>
+              {/* Status Messages */}
+              {error && (
+                <div className="text-red-600 font-medium mb-6 p-4 bg-red-50 rounded-2xl border border-red-200 max-w-2xl mx-auto">
+                  {error}
+                </div>
+              )}
+              {loading && (
+                <div className="text-blue-600 font-medium mb-6 p-4 bg-blue-50 rounded-2xl border border-blue-200 max-w-2xl mx-auto">
+                  {t('loading')}
+                </div>
+              )}
+            </section>
 
-        {/* Search and Filters */}
-        {filteredGroups.length > 0 && (
-          <section className="mb-12">
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-                <Input
-                  placeholder={t('searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-12 bg-white/80 border-slate-200/50 h-12 rounded-2xl backdrop-blur-sm font-medium"
+            {/* Search and Filters */}
+            {filteredGroups.length > 0 && (
+              <section className="mb-12">
+                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+                    <Input
+                      placeholder={t('searchPlaceholder')}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-12 bg-white/80 border-slate-200/50 h-12 rounded-2xl backdrop-blur-sm font-medium"
+                    />
+                  </div>
+                  <label className="inline-flex items-center gap-2 text-slate-700 bg-white/80 border border-slate-200/50 rounded-2xl px-4 h-12 whitespace-nowrap">
+                    <input 
+                      type="checkbox" 
+                      checked={showFavsOnly} 
+                      onChange={(e) => setShowFavsOnly(e.target.checked)} 
+                      className="accent-blue-600 w-4 h-4" 
+                    />
+                    <span className="text-sm font-medium">{t('favoritesOnly')}</span>
+                    <span className="text-xs text-slate-400">({favCount})</span>
+                  </label>
+                </div>
+              </section>
+            )}
+
+             {/* Visual Plan */}
+             {filteredGroups.length > 0 && (
+              <section className="mb-16">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
+                    <Wand2 className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl text-slate-800 font-bold">{t('journeyTitle')}</h2>
+                    <p className="text-slate-600 text-sm">{t('journeySubtitle')}</p>
+                  </div>
+                </div>
+                <PlanMindMap
+                  goal={lastGoal || chatInput}
+                  steps={filteredGroups}
+                  onOpenTool={handleOpenTool}
+                  language={language}
+                  buildPrompt={buildPromptCallback}
                 />
-              </div>
-              <label className="inline-flex items-center gap-2 text-slate-700 bg-white/80 border border-slate-200/50 rounded-2xl px-4 h-12 whitespace-nowrap">
-                <input 
-                  type="checkbox" 
-                  checked={showFavsOnly} 
-                  onChange={(e) => setShowFavsOnly(e.target.checked)} 
-                  className="accent-blue-600 w-4 h-4" 
-                />
-                <span className="text-sm font-medium">{t('favoritesOnly')}</span>
-                <span className="text-xs text-slate-400">({favCount})</span>
-              </label>
-            </div>
-          </section>
-        )}
+              </section>
+            )}
 
-         {/* Visual Plan */}
-         {filteredGroups.length > 0 && (
-          <section className="mb-16">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
-                <Wand2 className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl text-slate-800 font-bold">{t('journeyTitle')}</h2>
-                <p className="text-slate-600 text-sm">{t('journeySubtitle')}</p>
-              </div>
-            </div>
-            <PlanMindMap
-              goal={lastGoal || chatInput}
-              steps={filteredGroups}
-              onOpenTool={handleOpenTool}
-              language={language}
-              buildPrompt={buildPromptCallback}
-              
-            />
-          </section>
-        )}
+            {/* Featured Tools & Categories - Only show when no results */}
+            {filteredGroups.length === 0 && !loading && groups.length === 0 && (
+              <>
+                {/* Featured Tools Section */}
+                <section className="mb-16">
+                  <div className="text-center mb-12">
+                    <div className="flex items-center justify-center gap-3 mb-4">
+                      <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/25">
+                        <Zap className="w-5 h-5 text-white" />
+                      </div>
+                      <h2 className="text-3xl font-bold text-slate-800">{t('featuredToolsTitle')}</h2>
+                    </div>
+                    <p className="text-slate-600 text-lg max-w-2xl mx-auto">
+                      {t('featuredToolsSubtitle')}
+                    </p>
+                  </div>
 
-        {/* Empty states */}
-        {filteredGroups.length === 0 && !loading && groups.length === 0 && (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
-              <Sparkles className="w-10 h-10 text-slate-400" />
-            </div>
-            <h3 className="text-slate-800 mb-3 font-bold text-xl">{t('readyTitle')}</h3>
-            <p className="text-slate-600">{t('readySubtitle')}</p>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {getFeaturedTools(language).map((tool) => (
+                      <Card 
+                        key={tool.name}
+                        className="group border-slate-200/50 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-white/90 backdrop-blur-sm overflow-hidden"
+                      >
+                        <CardContent className="p-6 relative">
+                          {/* Background gradient */}
+                          <div className={`absolute inset-0 bg-gradient-to-br ${tool.gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-300`} />
+                          
+                          {/* Content */}
+                          <div className="relative">
+                            {/* Tool header */}
+                            <div className="flex items-center justify-between mb-4">
+                              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${tool.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                <span className="text-2xl">{tool.icon}</span>
+                              </div>
+                              <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                                {t('mostUsed')}
+                              </Badge>
+                            </div>
+
+                            <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-slate-900 transition-colors">
+                              {tool.name}
+                            </h3>
+
+                            <p className="text-sm text-slate-600 mb-3 leading-relaxed">
+                              {tool.description}
+                            </p>
+
+                            <div className="flex items-center justify-between mb-6">
+                              <Badge variant="secondary" className="text-xs bg-slate-100 text-slate-600">
+                                {tool.category}
+                              </Badge>
+                            </div>
+
+                            {/* Action button */}
+                            <a
+                              href={tool.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`block w-full text-center text-white rounded-2xl py-3 font-medium shadow-lg transition-all duration-200 bg-gradient-to-r ${tool.gradient} hover:shadow-xl hover:-translate-y-0.5`}
+                            >
+                              {t('tryTool')}
+                            </a>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </section>
+
+                {/* Categories Overview Section */}
+                <section className="mb-16">
+                  <div className="text-center mb-12">
+                    <div className="flex items-center justify-center gap-3 mb-4">
+                      <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                        <Grid3x3 className="w-5 h-5 text-white" />
+                      </div>
+                      <h2 className="text-3xl font-bold text-slate-800">{t('exploreCategories')}</h2>
+                    </div>
+                    <p className="text-slate-600 text-lg max-w-2xl mx-auto mb-8">
+                      {t('exploreCategoriesSubtitle')}
+                    </p>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    {getFeaturedCategories(language).slice(0, 4).map((category) => (
+                      <Card 
+                        key={category.id}
+                        className="group border-slate-200/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/90 backdrop-blur-sm cursor-pointer"
+                        onClick={() => {
+                          const samplePrompt = language === 'bg' ? 
+                            `Помогни ми с ${category.label.toLowerCase()}` :
+                            `Help me with ${category.label.toLowerCase()}`;
+                          setChatInput(samplePrompt);
+                        }}
+                      >
+                        <CardContent className="p-6 text-center relative">
+                          {/* Background gradient */}
+                          <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-300 rounded-lg`} />
+                          
+                          <div className="relative">
+                            <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${category.gradient} flex items-center justify-center shadow-md mx-auto mb-4 group-hover:scale-110 transition-transform duration-200`}>
+                              <span className="text-xl">{category.emoji}</span>
+                            </div>
+                            <h3 className="font-semibold text-slate-800 mb-2 group-hover:text-slate-900 transition-colors">
+                              {category.label}
+                            </h3>
+                            <p className="text-xs text-slate-600 leading-relaxed">
+                              {category.tools.length} {language === 'bg' ? 'инструмента' : 'tools'}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  <div className="text-center">
+                    <Button 
+                      onClick={goCategories}
+                      variant="outline"
+                      className="border-indigo-300 text-indigo-600 hover:bg-indigo-50 px-8 py-3"
+                    >
+                      {t('browseAllCategories')}
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
+                </section>
+
+                {/* CTA Section */}
+                <section className="text-center py-12">
+                  <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                    <Sparkles className="w-10 h-10 text-slate-400" />
+                  </div>
+                  <h3 className="text-slate-800 mb-3 font-bold text-xl">{t('readyTitle')}</h3>
+                  <p className="text-slate-600">{t('readySubtitle')}</p>
+                </section>
+              </>
+            )}
+
+            {filteredGroups.length === 0 && !loading && groups.length > 0 && (
+              <div className="text-center py-16">
+                <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                  <Search className="w-10 h-10 text-slate-400" />
+                </div>
+                <h3 className="text-slate-800 mb-3 font-bold text-xl">{t('noToolsTitle')}</h3>
+                <p className="text-slate-600">{t('noToolsSubtitle')}</p>
+              </div>
+            )}
           </div>
-        )}
-
-        {filteredGroups.length === 0 && !loading && groups.length > 0 && (
-          <div className="text-center py-16">
-            <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
-              <Search className="w-10 h-10 text-slate-400" />
-            </div>
-            <h3 className="text-slate-800 mb-3 font-bold text-xl">{t('noToolsTitle')}</h3>
-            <p className="text-slate-600">{t('noToolsSubtitle')}</p>
-          </div>
-        )}
-      </main>
+        </main>
+      </div>
     );
   }
 
@@ -1584,7 +2011,7 @@ export default function App() {
         id: 'health-wellness',
         label: language === 'bg' ? 'Здраве и благополучие' : 'Health & Wellness',
         emoji: '🏥',
-        description: language === 'bg' ? 'AI решения за здраве и лична стност развитие' : 'AI solutions for health and personal development',
+        description: language === 'bg' ? 'AI решения за здраве и личностно развитие' : 'AI solutions for health and personal development',
         count: 19,
         gradient: 'from-green-500 to-emerald-600'
       },
@@ -1657,7 +2084,7 @@ export default function App() {
                   const newHash = `#/categories/${encodeURIComponent(capParam)}`;
                   window.location.hash = newHash;
                 }}
-                                >
+              >
                 <CardContent className="p-6 relative">
                   {/* Background gradient */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-300`} />
